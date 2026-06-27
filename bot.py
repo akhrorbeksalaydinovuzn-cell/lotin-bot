@@ -2,11 +2,11 @@ import logging
 import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import (
-    Application, CommandHandler, MessageHandler, CallbackQueryHandler,
+    ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler,
     ContextTypes, filters
 )
 
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "TOKEN_BU_YERDA")
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 CHANNEL_USERNAME = "@seen_sms"
 WEBAPP_URL = "https://akhrorbeksalaydinovuzn-cell.github.io/lotin-miniapp/miniapp.html"
 
@@ -22,7 +22,6 @@ async def check_subscription(user_id: int, bot) -> bool:
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
     is_sub = await check_subscription(user.id, context.bot)
-
     if not is_sub:
         keyboard = [
             [InlineKeyboardButton("📢 Kanalga obuna bo'lish", url=f"https://t.me/{CHANNEL_USERNAME[1:]}")],
@@ -59,7 +58,6 @@ async def send_main_menu(message, name=""):
 async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
-
     if query.data == "check_sub":
         is_sub = await check_subscription(query.from_user.id, context.bot)
         if is_sub:
@@ -99,13 +97,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     await send_main_menu(update.message)
 
-def main():
-    app = Application.builder().token(BOT_TOKEN).build()
+if __name__ == "__main__":
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(callback_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     print("✅ Bot ishga tushdi...")
     app.run_polling()
-
-if __name__ == "__main__":
-    main()
